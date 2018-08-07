@@ -1,43 +1,22 @@
 package cmarsh.npr;
 
-import cmarsh.npr.controllers.Drawer;
+import cmarsh.npr.model.SketchDrawer;
+import cmarsh.npr.view.NprApplicationScene;
 import javafx.application.Application;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 
 public class NprApplication extends Application {
-    private Image img;
-    private Drawer drawer;
+    private final NprApplicationScene nprApplicationScene;
 
     public NprApplication() {
-
+        nprApplicationScene = new NprApplicationScene();
     }
 
-
-    public void start(Stage stage) throws Exception {
-        Button saveButton = new Button("Save");
-        Button loadButton = new Button("Load");
-        Text imgInfo = new Text("This is where the image info will be displayed");
-        HBox toolbar = new HBox(50);
-        toolbar.setAlignment(Pos.CENTER);
-        toolbar.getChildren().addAll(saveButton, loadButton);
-
-
-        BorderPane borderPane = new BorderPane();
-        borderPane.setBottom(imgInfo);
-        borderPane.setTop(toolbar);
-
-        Scene scene = new Scene(borderPane);
-        stage.setScene(scene);
+    public void start(Stage stage) {
+        stage.setScene(nprApplicationScene.setScene());
         stage.sizeToScene();
         stage.show();
-
     }
 }
