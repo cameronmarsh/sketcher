@@ -1,18 +1,13 @@
 package cmarsh.npr.view;
 
 import cmarsh.npr.controllers.DrawingObserver;
-import cmarsh.npr.model.SketchDrawer;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
-
-import javax.swing.*;
 
 public class NprApplicationScene {
     private ImageView img;
@@ -31,9 +26,9 @@ public class NprApplicationScene {
         HBox toolbar = new HBox(50);
         Button saveButton = new Button("Save");
         Button loadButton = new Button("Load");
-        Button greyScale = new Button("Grey");
+        Button canny = new Button("Canny");
         toolbar.setAlignment(Pos.CENTER);
-        toolbar.getChildren().addAll(saveButton, loadButton, greyScale);
+        toolbar.getChildren().addAll(saveButton, loadButton, canny);
 
         //image view
         if (img.getImage() == null) {
@@ -50,7 +45,7 @@ public class NprApplicationScene {
         //add button listeners
         loadButton.setOnAction(observer.loadImage(img));
         saveButton.setOnAction(observer.saveImage(img));
-        greyScale.setOnAction(observer.greyImage(img));
+        canny.setOnAction(observer.cannyImage(img));
 
         Scene scene = new Scene(borderPane);
         return scene;
