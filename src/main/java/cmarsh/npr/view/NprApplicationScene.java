@@ -27,8 +27,9 @@ public class NprApplicationScene {
         Button saveButton = new Button("Save");
         Button loadButton = new Button("Load");
         Button canny = new Button("Canny");
+        Button shade = new Button("Shade");
         toolbar.setAlignment(Pos.CENTER);
-        toolbar.getChildren().addAll(saveButton, loadButton, canny);
+        toolbar.getChildren().addAll(saveButton, loadButton, canny, shade);
 
         //image view
         if (img.getImage() == null) {
@@ -43,9 +44,11 @@ public class NprApplicationScene {
         borderPane.setTop(toolbar);
 
         //add button listeners
+        //TODO: change the text when each action is being performed/is done
         loadButton.setOnAction(observer.loadImage(img));
-        saveButton.setOnAction(observer.saveImage(img));
+        saveButton.setOnAction(observer.saveImage());
         canny.setOnAction(observer.cannyImage(img));
+        shade.setOnAction(observer.shadeImage(img));
 
         Scene scene = new Scene(borderPane);
         return scene;

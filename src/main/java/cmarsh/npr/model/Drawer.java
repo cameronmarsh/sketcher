@@ -1,25 +1,30 @@
 package cmarsh.npr.model;
 
+
+import com.jhlabs.composite.ColorDodgeComposite;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.core.Scalar;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
+import static javafx.embed.swing.SwingFXUtils.fromFXImage;
+import static javafx.embed.swing.SwingFXUtils.toFXImage;
+
 public class Drawer {
-    private PixMap pixMap;
     private BufferedImage img;
 
+
     public Drawer() {
-        pixMap = null;
         img = null;
     }
 
@@ -37,8 +42,6 @@ public class Drawer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        pixMap = new PixMap(img);
     }
 
     /**
@@ -61,12 +64,72 @@ public class Drawer {
         Core.subtract(subMat, edges, edges);
 
         //convert matrix to image
-        MatOfByte buf = new MatOfByte();
-        Imgcodecs.imencode(".png", edges, buf);
-        byte[] ba = buf.toArray();
-
-        Image retImage = new Image(new ByteArrayInputStream(ba));
+        img = matToImage(edges);
+        Image retImage = toFXImage(img, null);
 
         return retImage;
+    }
+
+
+    /**
+     * Convert the OpenCV matrix to a Buffered Image
+     * @param matrix Matrix object to covert
+     * @return Buffered Image containing the information of the OpenCV matrix
+     */
+    public BufferedImage matToImage(Mat matrix){
+        //convert matrix to image
+        MatOfByte buf = new MatOfByte();
+        Imgcodecs.imencode(".png", matrix, buf);
+        byte[] ba = buf.toArray();
+
+        return  fromFXImage(new Image(new ByteArrayInputStream(ba)), null);
+    }
+
+    /**
+     * Perform a color dodge blending method to two images
+     * @param greyscale top layer
+     * @param neg bottom layer
+     * @return Blended image
+     */
+    public BufferedImage blend(BufferedImage greyscale, BufferedImage neg){
+        ColorDodgeComposite cdComposite = new ColorDodgeComposite(1);
+        CompositeContext compContext = cdComposite.createContext(neg.getColorModel(), greyscale.getColorModel(), null);
+        Raster negRaster = neg.getRaster();
+        Raster greyRaster = greyscale.getRaster();
+
+        BufferedImage composite = new BufferedImage(greyscale.getWidth(), greyscale.getHeight(), greyscale.getType());
+        WritableRaster colorDodgeRaster = composite.getRaster();
+        compContext.compose(negRaster, greyRaster, colorDodgeRaster);
+
+        return composite;
+    }
+
+    /**
+     * Return an image that appears like a shaded picture
+     * @param filename file containing the source image
+     * @return the shaded version of the source image
+     */
+    public Image shade(String filename){
+        //read in image as greyscale
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        Mat matrix = Imgcodecs.imread(filename, Imgcodecs.CV_IMWRITE_PAM_FORMAT_GRAYSCALE);
+
+        //negate the greyscale image
+        Mat subMat = new Mat(matrix.size(), matrix.type());
+        subMat.setTo(new Scalar(255));
+
+        Core.subtract(subMat, matrix, subMat);
+
+        //apply gaussian blurring
+        Imgproc.GaussianBlur(subMat, subMat, new Size(45, 45), 0);
+
+        //apply color dodge of blurred image and source
+        BufferedImage imageGreyscale = matToImage(matrix);
+        BufferedImage imageNegBlurred = matToImage(subMat);
+        BufferedImage shaded = blend(imageGreyscale, imageNegBlurred);
+
+        img = shaded;
+
+        return toFXImage(shaded, null);
     }
 }
